@@ -4,15 +4,15 @@
 //
 //object Main extends ZIOAppDefault {
 //
-////  val applicationLogic =
-////    for {
-////      _ <- FetchDividendsHistory.apply()
-////    } yield ()
+//  val applicationLogic =
+//    for {
+//      _ <- FetchDividendsHistory.apply()
+//    } yield ()
 //
-////  val run =
-////    applicationLogic.provide(
-////      githubSubcomponent
-////    )
+//  val run =
+//    applicationLogic.provide(
+//      githubSubcomponent
+//    )
 //
 ////  val githubSubcomponent: ZLayer[Any, Nothing, Github] =
 ////    ZLayer.make[Github](
