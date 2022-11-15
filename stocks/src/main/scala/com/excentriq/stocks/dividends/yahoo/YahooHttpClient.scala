@@ -13,7 +13,7 @@ import java.time.Instant
 
 class YahooHttpClient(
     sttp: SttpBackend[Task, Any],
-    semaphore: YahooHttpClientSemaphore
+    semaphore: Semaphore
 ):
   def request(
       ticker: StockTicker,
@@ -42,21 +42,14 @@ object YahooHttpClient:
 
   private[yahoo] val Url = "https://query1.finance.yahoo.com/v8/finance/chart"
 
+  // todo cache
   val live: URLayer[
-    SttpBackend[Task, Any] & YahooHttpClientSemaphore,
+    SttpBackend[Task, Any] & YahooConfig,
     YahooHttpClient
-  ] = ZLayer.fromFunction(YahooHttpClient(_, _))
-
-class YahooHttpClientSemaphore(private val underlying: Semaphore):
-  def withPermit[R, E, A](zio: ZIO[R, E, A])(implicit
-      trace: Trace
-  ): ZIO[R, E, A] = underlying.withPermit(zio)
-
-object YahooHttpClientSemaphore:
-  val default: ULayer[YahooHttpClientSemaphore] =
-    ZLayer(
-      ZIO
-        .succeed(java.lang.Runtime.getRuntime.availableProcessors.toLong)
-        .flatMap(Semaphore.make(_))
-        .map(YahooHttpClientSemaphore(_))
-    )
+  ] = ZLayer {
+    for
+      sttp <- ZIO.service[SttpBackend[Task, Any]]
+      config <- ZIO.service[YahooConfig]
+      semaphore <- Semaphore.make(config.desiredParallelism)
+    yield YahooHttpClient(sttp, semaphore)
+  }
