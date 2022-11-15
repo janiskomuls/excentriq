@@ -27,8 +27,8 @@ class YahooHttpClient(
       )
       params = Map(
         "interval" -> interval.value,
-        "period1" -> from.toEpochMilli,
-        "period2" -> to.toEpochMilli,
+        "period1" -> from.getEpochSecond,
+        "period2" -> to.getEpochSecond,
         "events" -> "div%7Csplit"
       ).map((k, v) => s"$k=$v").mkString("&")
       url = s"${YahooHttpClient.Url}/$ticker?$params"

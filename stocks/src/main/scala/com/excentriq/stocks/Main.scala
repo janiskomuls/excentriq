@@ -1,23 +1,26 @@
-//package com.excentriq.stocks
-//
-//import zio._
-//
-//object Main extends ZIOAppDefault {
-//
-//  val applicationLogic =
-//    for {
-//      _ <- FetchDividendsHistory.apply()
-//    } yield ()
-//
-//  val run =
-//    applicationLogic.provide(
-//      githubSubcomponent
-//    )
-//
-////  val githubSubcomponent: ZLayer[Any, Nothing, Github] =
-////    ZLayer.make[Github](
-////      Github.live,
-////      Http.live,
-////      Config.default
-////    )
-//}
+package com.excentriq.stocks
+
+import com.excentriq.stocks.dividends.FetchDividendsHistory
+import com.excentriq.stocks.dividends.yahoo.*
+import sttp.client3.*
+import sttp.client3.httpclient.zio.*
+import zio.*
+
+import java.time.temporal.TemporalAmount
+import java.time.{Instant, ZoneOffset}
+
+object Main extends ZIOAppDefault {
+
+  private val app = testApp
+
+  val run: ZIO[Any, Throwable, Unit] =
+    app.build(Scope.global).flatMap(_.get.run())
+
+  private def testApp: RLayer[Any, App] =
+    ZLayer.make[App](
+      App.testRun("googl", years = 1),
+      FetchDividendsHistory.live,
+      YahooModule.live,
+      HttpClientZioBackend.layer()
+    )
+}

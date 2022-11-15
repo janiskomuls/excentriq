@@ -16,7 +16,6 @@ object Dependencies {
     val deps: Seq[ModuleID] = Seq(
       "dev.zio" %% "zio" % Version,
       "dev.zio" %% "zio-streams" % Version,
-      "dev.zio" %% "zio-cache" % Version,
       "dev.zio" %% "zio-test" % Version,
       "dev.zio" %% "zio-test" % Version % Test,
       "dev.zio" %% "zio-test-sbt" % Version % Test

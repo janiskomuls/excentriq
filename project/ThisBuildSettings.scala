@@ -6,13 +6,14 @@ object ThisBuildSettings {
   val Name = "Excentriq"
   val NormalizedName = "live-extrachilli"
   val ScalaVersion = "3.2.1"
+  val OrganizationPackage = "com.excentriq"
 
   def apply(): Seq[Setting[_]] = instance
 
   private val instance: Seq[Setting[_]] = inThisBuild(
     Seq(
       scalaVersion := ScalaVersion,
-      organization := "com.excentriq",
+      organization := OrganizationPackage,
       description := Name,
       startYear := Some(2022),
       shellPrompt := { s => s"${Project.extract(s).currentProject.id} > " },

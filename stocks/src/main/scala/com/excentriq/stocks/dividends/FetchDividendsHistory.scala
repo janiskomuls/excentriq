@@ -2,8 +2,7 @@ package com.excentriq.stocks.dividends
 
 import com.excentriq.stocks.*
 import com.excentriq.stocks.dividends.*
-import com.excentriq.stocks.dividends.yahoo.YahooHttpClient
-import com.excentriq.stocks.dividends.yahoo.YahooInterval.ThreeMonths
+import com.excentriq.stocks.dividends.yahoo.{YahooHttpClient, YahooInterval}
 import zio.*
 
 import java.time.Instant
@@ -13,7 +12,7 @@ class FetchDividendsHistory(client: YahooHttpClient):
       from: Instant,
       to: Instant
   ): Task[List[DividendsHistory]] =
-    client.request(ticker, from, to, ThreeMonths)
+    client.request(ticker, from, to, YahooInterval.Week)
 
 object FetchDividendsHistory:
 
