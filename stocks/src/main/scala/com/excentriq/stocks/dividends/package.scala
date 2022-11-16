@@ -1,6 +1,7 @@
 package com.excentriq.stocks
 
-package dividends {
+package dividends:
   case class DividendsHistory()
-  case class DividendsHistory2() // tmp
-}
+
+  // tmp, intellij goes bananas if only 1 class in package object
+  case class DividendsHistory2()
