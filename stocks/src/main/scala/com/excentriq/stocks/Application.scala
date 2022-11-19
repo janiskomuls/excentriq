@@ -1,22 +1,23 @@
 package com.excentriq.stocks
 
-import com.excentriq.stocks.dividends.FetchDividendsHistory
+import com.excentriq.stocks.dividends.*
+import com.excentriq.stocks.domain.*
 import zio.*
 
 import java.time.temporal.TemporalAmount
 import java.time.{Instant, ZoneOffset}
 
-class App(fetchDividendsHistory: FetchDividendsHistory):
+class Application(fetchDividendsHistory: FetchDividendsHistory):
   def run(): Task[Unit] = ???
 
-object App:
-  val live: ZLayer[FetchDividendsHistory, Nothing, App] =
-    ZLayer.fromFunction(App(_))
+object Application:
+  val live: ZLayer[FetchDividendsHistory, Nothing, Application] =
+    ZLayer.fromFunction(Application(_))
 
   def testRun(
       ticker: String,
       years: Int
-  ): ZLayer[FetchDividendsHistory, Nothing, App] =
+  ): ZLayer[FetchDividendsHistory, Nothing, Application] =
     ZLayer {
       for
         to0 <- Clock.localDateTime
@@ -26,9 +27,9 @@ object App:
           from0.toInstant(ZoneOffset.UTC),
           to0.toInstant(ZoneOffset.UTC)
         )
-      yield new App(fetchDividendsHistory) {
+      yield new Application(fetchDividendsHistory) {
         override def run(): Task[Unit] =
-          fetchDividendsHistory(StockTicker(ticker))(from, to).flatMap(v =>
+          fetchDividendsHistory(ticker.toTicker)(from, to).flatMap(v =>
             ZIO.debug(v)
           )
       }

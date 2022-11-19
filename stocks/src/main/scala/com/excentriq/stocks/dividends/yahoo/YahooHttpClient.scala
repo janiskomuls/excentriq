@@ -1,15 +1,17 @@
 package com.excentriq.stocks.dividends.yahoo
 
-import com.excentriq.stocks.StockTicker
+import com.excentriq.stocks.dividends.yahoo.ChartResponse.*
 import com.excentriq.stocks.dividends.DividendsHistory
 import sttp.client3.*
 import sttp.client3.httpclient.zio.*
 import sun.nio.cs.{StandardCharsets, UTF_8}
 import zio.*
-
+import ChartResponse.*
 import java.net.URLEncoder
 import java.nio.charset.Charset
-import java.time.Instant
+import java.time.{Instant, OffsetTime, ZoneOffset}
+import java.util.{SimpleTimeZone, TimeZone}
+import scala.math.BigDecimal.RoundingMode
 
 class YahooHttpClient(
     sttp: SttpBackend[Task, Any],
@@ -23,7 +25,7 @@ class YahooHttpClient(
   ): Task[List[DividendsHistory]] =
     for
       ticker <- ZIO.succeed(
-        URLEncoder.encode(ticker.value, Charset.defaultCharset())
+        URLEncoder.encode(ticker, Charset.defaultCharset())
       )
       params = Map(
         "interval" -> interval.value,
@@ -40,9 +42,8 @@ class YahooHttpClient(
 
 object YahooHttpClient:
 
-  private[yahoo] val Url = "https://query1.finance.yahoo.com/v8/finance/chart"
+  private val Url = "https://query1.finance.yahoo.com/v8/finance/chart"
 
-  // todo cache
   val live: URLayer[
     SttpBackend[Task, Any] & YahooConfig,
     YahooHttpClient

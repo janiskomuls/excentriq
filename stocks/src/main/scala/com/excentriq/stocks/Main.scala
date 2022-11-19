@@ -9,18 +9,17 @@ import zio.*
 import java.time.temporal.TemporalAmount
 import java.time.{Instant, ZoneOffset}
 
-object Main extends ZIOAppDefault {
+object Main extends ZIOAppDefault:
 
   private val app = testApp
 
   val run: ZIO[Any, Throwable, Unit] =
     app.build(Scope.global).flatMap(_.get.run())
 
-  private def testApp: RLayer[Any, App] =
-    ZLayer.make[App](
-      App.testRun("googl", years = 1),
+  private def testApp: RLayer[Any, Application] =
+    ZLayer.make[Application](
+      Application.testRun("googl", years = 1),
       FetchDividendsHistory.live,
       YahooModule.live,
       HttpClientZioBackend.layer()
     )
-}
