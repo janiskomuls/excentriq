@@ -1,7 +1,7 @@
 package com.excentriq.stocks.dividends.yahoo
 
-import com.excentriq.stocks.domain.*
 import com.excentriq.stocks.dividends.yahoo.ChartResponse.*
+import com.excentriq.stocks.domain.*
 
 import java.net.URLEncoder
 import java.nio.charset.Charset
