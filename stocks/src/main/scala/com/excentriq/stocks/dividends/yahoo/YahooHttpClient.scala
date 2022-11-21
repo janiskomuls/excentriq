@@ -6,12 +6,14 @@ import sttp.client3.*
 import sttp.client3.httpclient.zio.*
 import sun.nio.cs.{StandardCharsets, UTF_8}
 import zio.*
+import zio.json.*
 
 import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.time.{Instant, OffsetTime, ZoneOffset}
 import java.util.{SimpleTimeZone, TimeZone}
 import scala.math.BigDecimal.RoundingMode
+import ShowError._
 
 class YahooHttpClient(
     sttp: SttpBackend[Task, Any],
@@ -35,9 +37,13 @@ class YahooHttpClient(
       ).map((k, v) => s"$k=$v").mkString("&")
       url = s"${YahooHttpClient.Url}/$ticker?$params"
       request = basicRequest.response(asStringAlways).get(uri"$url")
-      res <- semaphore.withPermit(sttp.send(request))
+      response <- semaphore.withPermit(sttp.send(request))
+      _ <- ZIO.debug(response.body)
+      result <- ZIO
+        .fromEither(response.body.fromJson[ChartResponse])
+        .mapError(error => DecodeException(response.body, error.toError))
     yield
-      println(res.body)
+      println(result)
       List.empty
 
 object YahooHttpClient:

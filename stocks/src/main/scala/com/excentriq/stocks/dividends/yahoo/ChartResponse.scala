@@ -2,7 +2,7 @@ package com.excentriq.stocks.dividends.yahoo
 
 import com.excentriq.stocks.dividends.yahoo.ChartResponse.*
 import com.excentriq.stocks.domain.*
-
+import zio.json.*
 import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.time.{Instant, OffsetTime, ZoneOffset}
@@ -17,9 +17,12 @@ object ChartResponse:
   opaque type ExchangeName <: String = String
   opaque type InstrumentType <: String = String
   opaque type TimeZoneName <: String = String
+  opaque type Error <: String = String
+
   opaque type Price <: BigDecimal = BigDecimal
   opaque type PricePrecision <: Int = Int
   opaque type ZoneOffset <: Int = Int
+
   opaque type Timestamp <: Instant = Instant
 
   extension (value: String)
@@ -28,8 +31,11 @@ object ChartResponse:
     def toExchangeName: ExchangeName = value
     def toInstrumentType: InstrumentType = value
     def toTimeZoneName: TimeZoneName = value
+    def toError: Error = value
 
-  extension (value: BigDecimal) def toPrice: Price = value
+  extension (value: BigDecimal)
+    def toPrice: Price = value
+    def scaled(scale: Int) = value.setScale(scale, RoundingMode.HALF_UP)
 
   extension (value: Int)
     def toPrecision: PricePrecision = value
@@ -37,8 +43,10 @@ object ChartResponse:
 
   extension (value: Instant) def toTimestamp: Timestamp = value
 
-  case class Chart(results: List[Result], error: Option[String])
-  case class Result(metaInfo: MetaInfo)
+  case class DecodeException(body: String, error: Error) extends RuntimeException(error)
+
+  case class Chart(result: List[Result], error: Option[Error])
+  case class Result(meta: MetaInfo)
 
   case class MetaInfo(
       symbol: StockTicker,
@@ -59,10 +67,8 @@ object ChartResponse:
       timestamp: List[Instant],
       currentTradingPeriod: CurrentTradingPeriod
   ) {
-    def price: Price =
-      regularMarketPrice.setScale(priceHint, RoundingMode.HALF_UP)
-    def previousClosePrice: Price =
-      chartPreviousClose.setScale(priceHint, RoundingMode.HALF_UP)
+    def price: Price = regularMarketPrice.scaled(priceHint)
+    def previousClosePrice: Price = chartPreviousClose.scaled(priceHint)
   }
 
   case class TradingPeriod(
@@ -77,3 +83,12 @@ object ChartResponse:
       regular: TradingPeriod,
       post: TradingPeriod
   )
+
+  implicit val intervalDecoder: JsonDecoder[YahooInterval] = DeriveJsonDecoder.gen
+  implicit val rangeDecoder: JsonDecoder[YahooRange] = DeriveJsonDecoder.gen
+  implicit val tradingPeriodDecoder: JsonDecoder[TradingPeriod] = DeriveJsonDecoder.gen
+  implicit val currentTradingPeriodDecoder: JsonDecoder[CurrentTradingPeriod] = DeriveJsonDecoder.gen
+  implicit val metaInfoDecoder: JsonDecoder[MetaInfo] = DeriveJsonDecoder.gen
+  implicit val resultDecoder: JsonDecoder[Result] = DeriveJsonDecoder.gen
+  implicit val chartDecoder: JsonDecoder[Chart] = DeriveJsonDecoder.gen
+  implicit val chartResponseDecoder: JsonDecoder[ChartResponse] = DeriveJsonDecoder.gen
