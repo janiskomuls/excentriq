@@ -30,7 +30,7 @@ class YahooHttpClient(
         URLEncoder.encode(ticker, Charset.defaultCharset())
       )
       params = Map(
-        "interval" -> interval.value,
+        "interval" -> interval.code,
         "period1" -> from.getEpochSecond,
         "period2" -> to.getEpochSecond,
         "events" -> "div%7Csplit"
