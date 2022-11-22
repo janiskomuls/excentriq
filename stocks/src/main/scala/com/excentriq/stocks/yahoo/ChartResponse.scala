@@ -1,7 +1,7 @@
-package com.excentriq.stocks.dividends.yahoo
+package com.excentriq.stocks.yahoo
 
-import com.excentriq.stocks.dividends.yahoo.ChartResponse.*
-import com.excentriq.stocks.domain.*
+import com.excentriq.stocks.yahoo.*
+import com.excentriq.stocks.yahoo.ChartResponse.*
 import zio.json.*
 
 import java.net.URLEncoder
@@ -47,7 +47,8 @@ object ChartResponse:
   case class DecodeException(body: String, error: Error) extends RuntimeException(error)
 
   case class Chart(result: List[Result], error: Option[Error])
-  case class Result(meta: MetaInfo, timestamp: List[Timestamp] /*, events */)
+
+  case class Result(meta: MetaInfo, timestamp: List[Timestamp] /*, events */ )
 
   case class MetaInfo(
       symbol: StockTicker,
@@ -63,9 +64,9 @@ object ChartResponse:
       chartPreviousClose: Price,
       priceHint: PricePrecision,
       currentTradingPeriod: CurrentTradingPeriod,
-      dataGranularity: YahooInterval,
-      range: YahooRange,
-      validRanges: List[YahooRange],
+      dataGranularity: Interval,
+      range: Range,
+      validRanges: List[Range]
   ) {
     def price: Price = regularMarketPrice.scaled(priceHint)
     def previousClosePrice: Price = chartPreviousClose.scaled(priceHint)
@@ -85,8 +86,6 @@ object ChartResponse:
   )
 
   implicit val timestampDecoder: JsonDecoder[Timestamp] = JsonDecoder.long.map(Instant.ofEpochSecond)
-  implicit val intervalDecoder: JsonDecoder[YahooInterval] = JsonDecoder.string.mapOrFail(YahooInterval.byCode)
-  implicit val rangeDecoder: JsonDecoder[YahooRange] = JsonDecoder.string.mapOrFail(YahooRange.byCode)
   implicit val tradingPeriodDecoder: JsonDecoder[TradingPeriod] = DeriveJsonDecoder.gen
   implicit val currentTradingPeriodDecoder: JsonDecoder[CurrentTradingPeriod] = DeriveJsonDecoder.gen
   implicit val metaInfoDecoder: JsonDecoder[MetaInfo] = DeriveJsonDecoder.gen

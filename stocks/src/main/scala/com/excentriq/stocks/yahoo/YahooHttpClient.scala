@@ -1,8 +1,9 @@
-package com.excentriq.stocks.dividends.yahoo
+package com.excentriq.stocks.yahoo
 
 import com.excentriq.stocks.dividends.DividendsHistory
-import com.excentriq.stocks.dividends.yahoo.ChartResponse.*
+import com.excentriq.stocks.yahoo.ChartResponse.*
 import sttp.client3.*
+import sttp.client3.ShowError.*
 import sttp.client3.httpclient.zio.*
 import sun.nio.cs.{StandardCharsets, UTF_8}
 import zio.*
@@ -13,7 +14,6 @@ import java.nio.charset.Charset
 import java.time.{Instant, OffsetTime, ZoneOffset}
 import java.util.{SimpleTimeZone, TimeZone}
 import scala.math.BigDecimal.RoundingMode
-import ShowError._
 
 class YahooHttpClient(
     sttp: SttpBackend[Task, Any],
@@ -23,7 +23,7 @@ class YahooHttpClient(
       ticker: StockTicker,
       from: Instant,
       to: Instant,
-      interval: YahooInterval
+      interval: Interval
   ): Task[List[DividendsHistory]] =
     for
       ticker <- ZIO.succeed(

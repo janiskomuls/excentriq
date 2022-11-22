@@ -1,7 +1,7 @@
 package com.excentriq.stocks
 
 import com.excentriq.stocks.dividends.FetchDividendsHistory
-import com.excentriq.stocks.dividends.yahoo.*
+import com.excentriq.stocks.yahoo.YahooModule
 import sttp.client3.*
 import sttp.client3.httpclient.zio.*
 import zio.*

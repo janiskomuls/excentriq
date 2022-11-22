@@ -1,4 +1,4 @@
-package com.excentriq.stocks.dividends.yahoo
+package com.excentriq.stocks.yahoo
 
 import zio.{ZIO, ZLayer}
 

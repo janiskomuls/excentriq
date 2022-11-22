@@ -1,4 +1,4 @@
-package com.excentriq.stocks.dividends.yahoo
+package com.excentriq.stocks.yahoo
 
 import sttp.capabilities.WebSockets
 import sttp.capabilities.zio.ZioStreams
