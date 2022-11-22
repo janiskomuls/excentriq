@@ -1,30 +1,25 @@
 package com.excentriq.stocks.yahoo
 
-import com.excentriq.stocks.dividends.DividendsHistory
 import com.excentriq.stocks.yahoo.ChartResponse.*
+import com.excentriq.stocks.yahoo.YahooHttpClient.DecodeException
 import sttp.client3.*
-import sttp.client3.ShowError.*
-import sttp.client3.httpclient.zio.*
 import sun.nio.cs.{StandardCharsets, UTF_8}
 import zio.*
 import zio.json.*
 
 import java.net.URLEncoder
 import java.nio.charset.Charset
-import java.time.{Instant, OffsetTime, ZoneOffset}
-import java.util.{SimpleTimeZone, TimeZone}
-import scala.math.BigDecimal.RoundingMode
 
 class YahooHttpClient(
     sttp: SttpBackend[Task, Any],
     semaphore: Semaphore
 ):
   def request(
-      ticker: StockTicker,
-      from: Instant,
-      to: Instant,
-      interval: Interval
-  ): Task[List[DividendsHistory]] =
+    ticker: StockTicker,
+    from: Timestamp,
+    to: Timestamp,
+    interval: Interval
+  ): Task[ChartResponse] =
     for
       ticker <- ZIO.succeed(
         URLEncoder.encode(ticker, Charset.defaultCharset())
@@ -38,17 +33,17 @@ class YahooHttpClient(
       url = s"${YahooHttpClient.Url}/$ticker?$params"
       request = basicRequest.response(asStringAlways).get(uri"$url")
       response <- semaphore.withPermit(sttp.send(request))
-      _ <- ZIO.debug(response.body)
-      result <- ZIO
+      _ <- ZIO.debug("Response json: " + response.body)
+      chart <- ZIO
         .fromEither(response.body.fromJson[ChartResponse])
-        .mapError(error => DecodeException(response.body, error.toError))
-    yield
-      println(result)
-      List.empty
+        .mapError(DecodeException(response.body, _))
+      _ <- ZIO.debug("Response object: " + chart)
+    yield chart
 
 object YahooHttpClient:
-
   private val Url = "https://query1.finance.yahoo.com/v8/finance/chart"
+
+  case class DecodeException(body: String, error: String) extends RuntimeException(error)
 
   val live: URLayer[
     SttpBackend[Task, Any] & YahooConfig,

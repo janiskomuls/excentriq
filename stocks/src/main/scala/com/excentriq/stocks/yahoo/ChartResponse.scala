@@ -44,8 +44,6 @@ object ChartResponse:
 
   extension (value: Instant) def toTimestamp: Timestamp = value
 
-  case class DecodeException(body: String, error: Error) extends RuntimeException(error)
-
   case class Chart(result: List[Result], error: Option[Error])
 
   case class Result(meta: MetaInfo, timestamp: List[Timestamp] /*, events */ )
@@ -85,7 +83,7 @@ object ChartResponse:
       post: TradingPeriod
   )
 
-  implicit val timestampDecoder: JsonDecoder[Timestamp] = JsonDecoder.long.map(Instant.ofEpochSecond)
+  implicit val timestampDecoder: JsonDecoder[Timestamp] = InstantDecoder
   implicit val tradingPeriodDecoder: JsonDecoder[TradingPeriod] = DeriveJsonDecoder.gen
   implicit val currentTradingPeriodDecoder: JsonDecoder[CurrentTradingPeriod] = DeriveJsonDecoder.gen
   implicit val metaInfoDecoder: JsonDecoder[MetaInfo] = DeriveJsonDecoder.gen

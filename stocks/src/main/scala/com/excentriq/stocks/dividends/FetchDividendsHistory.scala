@@ -14,7 +14,9 @@ class FetchDividendsHistory(client: YahooHttpClient):
       from: Instant,
       to: Instant
   ): Task[List[DividendsHistory]] =
-    client.request(ticker.toTicker, from, to, Interval.Week)
+    client.request(ticker.toTicker, from.toTimestamp, to.toTimestamp, Interval.Week).map { _ =>
+      List.empty[DividendsHistory]
+    }
 
 object FetchDividendsHistory:
 
