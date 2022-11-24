@@ -1,6 +1,8 @@
-package com.excentriq.stocks.yahoo
+package com.excentriq.stocks.yahoo.json
 
+import com.excentriq.stocks.yahoo.json.InstantHelper.*
 import zio.json.*
+import zio.json.JsonDecoder.UnsafeJson
 import zio.json.ast.Json
 import zio.json.internal.RetractReader
 
@@ -24,7 +26,15 @@ object InstantDecoder extends JsonDecoder[Instant]:
       case _               => Left("Not a timestamp value")
     }
 
-  private def instantFromNum(millisOrSeconds: Long): Instant =
+object InstantFieldDecoder extends JsonFieldDecoder[Instant] :
+  def unsafeDecodeField(trace: List[JsonError], in: String): Instant =
+    InstantDecoder.decodeJson(in) match {
+      case Left(err)    => throw UnsafeJson(JsonError.Message(err) :: trace)
+      case Right(value) => value
+    }
+
+private object InstantHelper:
+  def instantFromNum(millisOrSeconds: Long): Instant =
     val fromSeconds = Instant.ofEpochSecond(millisOrSeconds)
     if (fromSeconds.truncatedTo(ChronoUnit.SECONDS).equals(fromSeconds))
       fromSeconds

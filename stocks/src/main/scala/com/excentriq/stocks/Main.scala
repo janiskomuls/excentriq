@@ -18,7 +18,7 @@ object Main extends ZIOAppDefault:
 
   private def testApp: RLayer[Any, Application] =
     ZLayer.make[Application](
-      Application.testRun("googl", years = 1),
+      Application.testRun("AAPL", years = 1),
       FetchDividendsHistory.live,
       YahooModule.live,
       HttpClientZioBackend.layer()
