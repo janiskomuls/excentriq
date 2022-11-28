@@ -1,6 +1,6 @@
 package com.excentriq.stocks.yahoo
 
-import com.excentriq.stocks.yahoo.ChartResponse.*
+import com.excentriq.stocks.yahoo.HistoryResponse.*
 import com.excentriq.stocks.yahoo.YahooHttpClient.DecodeException
 import sttp.client3.*
 import sun.nio.cs.{StandardCharsets, UTF_8}
@@ -14,15 +14,15 @@ class YahooHttpClient(
     sttp: SttpBackend[Task, Any],
     semaphore: Semaphore
 ):
-  def request(
-    ticker: StockTicker,
+  def historyRequest(
+    symbol: StockSymbol,
     from: Timestamp,
     to: Timestamp,
-    interval: Interval
-  ): Task[ChartResponse] =
+    interval: Interval = Interval.Week,
+  ): Task[HistoryResponse] =
     for
-      ticker <- ZIO.succeed(
-        URLEncoder.encode(ticker, Charset.defaultCharset())
+      symbol <- ZIO.succeed(
+        URLEncoder.encode(symbol, Charset.defaultCharset())
       )
       params = Map(
         "interval" -> interval.code,
@@ -30,12 +30,12 @@ class YahooHttpClient(
         "period2" -> to.getEpochSecond,
         "events" -> "div%7Csplit"
       ).map((k, v) => s"$k=$v").mkString("&")
-      url = s"${YahooHttpClient.Url}/$ticker?$params"
+      url = s"${YahooHttpClient.Url}/$symbol?$params"
       request = basicRequest.response(asStringAlways).get(uri"$url")
       response <- semaphore.withPermit(sttp.send(request))
       _ <- ZIO.debug("Response json: " + response.body)
       chart <- ZIO
-        .fromEither(response.body.fromJson[ChartResponse])
+        .fromEither(response.body.fromJson[HistoryResponse])
         .mapError(DecodeException(response.body, _))
       _ <- ZIO.debug("Response object: " + chart)
     yield chart

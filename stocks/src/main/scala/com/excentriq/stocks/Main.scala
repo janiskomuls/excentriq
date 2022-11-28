@@ -1,6 +1,6 @@
 package com.excentriq.stocks
 
-import com.excentriq.stocks.dividends.FetchDividendsHistory
+import com.excentriq.stocks.dividends.FetchDividendsIncrease
 import com.excentriq.stocks.yahoo.YahooModule
 import sttp.client3.*
 import sttp.client3.httpclient.zio.*
@@ -19,7 +19,7 @@ object Main extends ZIOAppDefault:
   private def testApp: RLayer[Any, Application] =
     ZLayer.make[Application](
       Application.testRun("AAPL", years = 1),
-      FetchDividendsHistory.live,
+      FetchDividendsIncrease.live,
       YahooModule.live,
       HttpClientZioBackend.layer()
     )

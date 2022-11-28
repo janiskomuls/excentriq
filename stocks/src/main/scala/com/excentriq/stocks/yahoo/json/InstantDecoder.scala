@@ -10,8 +10,7 @@ import java.time.Instant
 import java.time.temporal.ChronoUnit
 import scala.util.Try
 
-/**
- * Try to decode long values as epoh seconds or millis, otherwise try to parse string date time
+/** Try to decode long values as epoh seconds or millis, otherwise try to parse string date time
  */
 object InstantDecoder extends JsonDecoder[Instant]:
   def unsafeDecode(trace: List[JsonError], in: RetractReader): Instant =

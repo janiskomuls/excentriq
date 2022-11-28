@@ -1,7 +1,7 @@
 package com.excentriq.stocks.yahoo
 
 import com.excentriq.stocks.yahoo.*
-import com.excentriq.stocks.yahoo.ChartResponse.*
+import com.excentriq.stocks.yahoo.HistoryResponse.*
 import com.excentriq.stocks.yahoo.json.*
 import zio.json.*
 
@@ -11,10 +11,10 @@ import java.time.{Instant, OffsetTime, ZoneOffset}
 import java.util.{SimpleTimeZone, TimeZone}
 import scala.math.BigDecimal.RoundingMode
 
-case class ChartResponse(chart: Chart)
+case class HistoryResponse(chart: HistoryChart)
 
-object ChartResponse:
-  opaque type StockTicker <: String = String
+object HistoryResponse:
+  opaque type StockSymbol <: String = String
   opaque type Currency <: String = String
   opaque type ExchangeName <: String = String
   opaque type InstrumentType <: String = String
@@ -32,31 +32,31 @@ object ChartResponse:
   opaque type Timestamp <: Instant = Instant
 
   extension (value: String)
-    def toTicker: StockTicker = value
-    def toCurrency: Currency = value
-    def toExchangeName: ExchangeName = value
-    def toInstrumentType: InstrumentType = value
-    def toTimeZoneName: TimeZoneName = value
-    def toError: Error = value
-    def toSplitRatio: SplitRatioStr = value
+    def yhSymbol: StockSymbol = value
+    def yhCurrency: Currency = value
+    def yhExchangeName: ExchangeName = value
+    def yhInstrumentType: InstrumentType = value
+    def yhTimeZoneName: TimeZoneName = value
+    def yhError: Error = value
+    def yhSplitRatio: SplitRatioStr = value
 
   extension (value: BigDecimal)
-    def toPrice: Price = value
-    def toAmount: Amount = value
+    def yhPrice: Price = value
+    def yhAmount: Amount = value
     def scaled(scale: Int) = value.setScale(scale, RoundingMode.HALF_UP)
 
   extension (value: Int)
-    def toPrecision: PricePrecision = value
-    def toZoneOffset: ZoneOffset = value
+    def yhPrecision: PricePrecision = value
+    def yhZoneOffset: ZoneOffset = value
 
-  extension (value: Instant) def toTimestamp: Timestamp = value
+  extension (value: Instant) def yhTimestamp: Timestamp = value
 
-  case class Chart(result: List[Result], error: Option[Error])
+  case class HistoryChart(result: List[Result], error: Option[Error])
 
   case class Result(meta: MetaInfo, timestamp: List[Timestamp] = List.empty, events: Events)
 
   case class MetaInfo(
-    symbol: StockTicker,
+    symbol: StockSymbol,
     currency: Currency,
     exchangeName: ExchangeName,
     instrumentType: InstrumentType,
@@ -76,17 +76,18 @@ object ChartResponse:
     def price: Price = regularMarketPrice.scaled(priceHint)
     def previousClosePrice: Price = chartPreviousClose.scaled(priceHint)
 
-  case class Events(splits: Map[Timestamp, Split], dividends: Map[Timestamp, Dividend])
+  case class Events(splits: Map[Timestamp, Split], dividends: Map[Timestamp, Dividend]):
+    def dividendsList: List[Dividend] = dividends.values.toList
 
   case class Split(
     date: Timestamp,
     numerator: Numerator, // 20
     denominator: Denominator, // 1
-    splitRatio: SplitRatioStr, // "20:1"
+    splitRatio: SplitRatioStr // "20:1"
   )
 
   case class Dividend(amount: Amount, date: Timestamp):
-    def exDivDate: Timestamp = date
+    def exDividendDate: Timestamp = date
 
   case class TradingPeriod(
     timezone: TimeZoneName,
@@ -112,5 +113,5 @@ object ChartResponse:
   implicit val dividendMapDecoder: JsonDecoder[Map[Timestamp, Dividend]] = MapWithDefaultJsonEncoder.gen
   implicit val eventsDecoder: JsonDecoder[Events] = DeriveJsonDecoder.gen
   implicit val resultDecoder: JsonDecoder[Result] = DeriveJsonDecoder.gen
-  implicit val chartDecoder: JsonDecoder[Chart] = DeriveJsonDecoder.gen
-  implicit val chartResponseDecoder: JsonDecoder[ChartResponse] = DeriveJsonDecoder.gen
+  implicit val historyDecoder: JsonDecoder[HistoryChart] = DeriveJsonDecoder.gen
+  implicit val historyResponseDecoder: JsonDecoder[HistoryResponse] = DeriveJsonDecoder.gen
