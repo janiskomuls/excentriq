@@ -24,7 +24,7 @@ object DividendIncrease:
     till: Timestamp
   ): Option[DividendIncrease] =
     Option.when(!amountFrom.isNegative && !amountTill.isNegative && !till.isBefore(from)) {
-      val amountFrom_ = if (amountFrom == 0) amountTill else amountFrom
-      val increase = (amountTill - amountFrom_) / amountFrom_
+      val normalisedFrom = if (amountFrom == 0) amountTill else amountFrom
+      val increase = (amountTill - normalisedFrom) / normalisedFrom
       DividendIncrease(symbol, increase.scaled(PercentageScale).toPercentage, from, till)
     }

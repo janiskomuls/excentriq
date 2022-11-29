@@ -15,7 +15,7 @@ object Application:
     ZLayer.fromFunction(Application(_))
 
   def testRun(
-    ticker: String,
+    tickers: List[String],
     years: Int
   ): ZLayer[FetchDividendsIncrease, Nothing, Application] =
     ZLayer {
@@ -29,6 +29,6 @@ object Application:
         )
       yield new Application(fetchDividendsHistory) {
         override def run(): Task[Unit] =
-          fetchDividendsHistory(ticker.toSymbol)(from.toTimestamp, to.toTimestamp).flatMap(v => ZIO.debug(v))
+          fetchDividendsHistory.list(tickers.map(_.toSymbol))(from.toTimestamp, to.toTimestamp).flatMap(v => ZIO.debug(v))
       }
     }
