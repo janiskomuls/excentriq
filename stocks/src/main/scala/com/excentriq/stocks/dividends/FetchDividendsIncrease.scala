@@ -20,9 +20,7 @@ class FetchDividendsIncrease(client: YahooHttpClient):
     from: Timestamp,
     till: Timestamp
   ): Task[List[DividendIncrease]] =
-    val values = symbols.map { s =>
-      apply(s)(from, till).map(_.toList)
-    }
+    val values = symbols.map { s => apply(s)(from, till) }
     ZIO.collectAll(values).map(_.flatten)
 
   private def toDividendIncrease(symbol: StockSymbol, history: HistoryResponse)(
@@ -39,8 +37,8 @@ class FetchDividendsIncrease(client: YahooHttpClient):
       fromAmount.toAmount,
       tillAmount.toAmount,
       from.toTimestamp,
-      till.toTimestamp)
-      ).flatten
+      till.toTimestamp,
+    )).flatten
 
 
 object FetchDividendsIncrease:

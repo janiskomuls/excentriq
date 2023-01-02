@@ -43,7 +43,7 @@ object HistoryResponse:
   extension (value: BigDecimal)
     def yhPrice: Price = value
     def yhAmount: Amount = value
-    def scaled(scale: Int) = value.setScale(scale, RoundingMode.HALF_UP)
+    def scaled(scale: Int): Amount = value.setScale(scale, RoundingMode.HALF_UP)
 
   extension (value: Int)
     def yhPrecision: PricePrecision = value

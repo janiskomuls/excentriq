@@ -1,30 +1,46 @@
 package com.excentriq.stocks.dividends
 
-import com.excentriq.stocks.dividends.DividendIncrease.from
+import com.excentriq.stocks.dividends.DividendIncrease.*
 import com.excentriq.stocks.domain.*
 
-import java.time.Instant
+import java.time.*
+import java.time.temporal.ChronoUnit.*
 import scala.concurrent.duration.*
 
-case class DividendIncrease(
+case class DividendIncrease private(
   symbol: StockSymbol,
-  increase: Percentage,
+  amountFrom: Amount,
+  amountTill: Amount,
   from: Timestamp,
-  till: Timestamp
+  till: Timestamp,
+  years: Long,
+  overallIncrease: Percentage,
+  annualizedIncrease: Percentage,
 )
 
 object DividendIncrease:
-  val PercentageScale: Int = 4
+  private val PercentageScale: Int = 4
 
   def from(
     symbol: StockSymbol,
     amountFrom: Amount,
     amountTill: Amount,
     from: Timestamp,
-    till: Timestamp
+    till: Timestamp,
   ): Option[DividendIncrease] =
-    Option.when(!amountFrom.isNegative && !amountTill.isNegative && !till.isBefore(from)) {
-      val normalisedFrom = if (amountFrom == 0) amountTill else amountFrom
-      val increase = (amountTill - normalisedFrom) / normalisedFrom
-      DividendIncrease(symbol, increase.scaled(PercentageScale).toPercentage, from, till)
+    Option.when(amountFrom.isPositive && amountTill.isPositive && !till.isBefore(from)) {
+      val years: Long = YEARS.between(
+        LocalDate.ofInstant(from, ZoneOffset.UTC),
+        LocalDate.ofInstant(till, ZoneOffset.UTC),
+      )
+      val increaseYears = years - 1 // since amountFrom is for 1st year, increase is for 1 year less
+
+      val overallIncrease: Percentage = ((amountTill - amountFrom) / amountFrom).toPercentage(PercentageScale)
+
+      val annualizedIncrease: Percentage =
+        if (increaseYears.isPositive)
+          (Math.pow((1 + overallIncrease).doubleValue, 1 / increaseYears.toDouble) - 1).toPercentage(PercentageScale)
+        else overallIncrease
+
+      DividendIncrease(symbol, amountFrom, amountTill, from, till, years, overallIncrease, annualizedIncrease)
     }
